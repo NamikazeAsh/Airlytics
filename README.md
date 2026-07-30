@@ -42,6 +42,11 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 Then open http://localhost:8000 and click "Connect Google Health".
 
+The frontend loads Roboto, the `marked` markdown renderer, and `DOMPurify` from
+CDNs (Google Fonts, jsDelivr) at page load, so it needs internet access even
+though the app itself runs locally — the coach chat and page fonts won't render
+correctly without it.
+
 Run with exactly **one** uvicorn worker — the background scheduler (sync jobs,
 token refresh, nightly rollups/insights) lives in-process, and a second worker
 would duplicate every job and race on token refresh.
