@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airlytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked@13/lib/marked.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  </head>
+  <body>
+    <div id="connect-view" class="connect-page hidden">
+      <div class="connect-card">
+        <h1>Connect your Fitbit data</h1>
+        <p>
+          Airlytics reads your steps, heart rate, HRV, sleep, SpO2, and activity data through Google Health API to
+          build your personal dashboard and AI coach.
+        </p>
+        <a id="login-link" class="btn btn-filled" href="/api/auth/google/login">Connect Google Health</a>
+      </div>
+    </div>
+
+    <div id="dashboard-view" class="app-shell hidden">
+      <header class="app-header">
+        <h1>Airlytics</h1>
+        <div class="app-header-actions">
+          <span class="status-pill" id="status-pill">
+            <span class="status-dot"></span>
+            <span class="status-label">Loading…</span>
+          </span>
+          <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark mode">
+            <span class="theme-icon-light">&#9728;</span>
+            <span class="theme-icon-dark">&#9789;</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="dashboard-body">
+        <main class="dashboard-main">
+          <div class="range-tabs" id="range-tabs"></div>
+
+          <div class="section">
+            <div class="metric-grid" id="metric-grid"></div>
+          </div>
+
+          <div class="section">
+            <h2 class="section-title">Anomalies</h2>
+            <div id="anomalies-container"></div>
+          </div>
+
+          <div class="section">
+            <h2 class="section-title">Coach insights</h2>
+            <div id="insights-container"></div>
+          </div>
+        </main>
+
+        <aside class="chat-panel">
+          <div class="chat-panel-header">
+            <span class="chat-panel-title">Ask the coach</span>
+          </div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <form id="chat-form" class="chat-form">
+            <input
+              id="chat-input"
+              class="chat-input"
+              type="text"
+              placeholder="Ask about your trends, sleep, readiness…"
+              autocomplete="off"
+            />
+            <button class="icon-btn icon-btn-filled" type="submit" aria-label="Send">&#10148;</button>
+          </form>
+        </aside>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

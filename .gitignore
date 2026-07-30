@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+backend/.env
+node_modules/
+frontend/dist/
+*.egg-info/
+.pytest_cache/
+backend/data/
+client_secret*.json
