@@ -1,5 +1,3 @@
-ko
-
 # Airlytics
 
 Personal health analytics dashboard and AI coach. Syncs your Fitbit data through

@@ -268,7 +268,50 @@ async function getConversationMessages(id) {
   return response.json();
 }
 
+function setupChatToggle() {
+  const fab = document.getElementById("chat-fab");
+  const panel = document.getElementById("chat-panel");
+  const closeBtn = document.getElementById("chat-close");
+
+  fab.addEventListener("click", () => {
+    panel.classList.toggle("hidden");
+    if (!panel.classList.contains("hidden")) document.getElementById("chat-input").focus();
+  });
+  closeBtn.addEventListener("click", () => panel.classList.add("hidden"));
+}
+
+function setupChatResize() {
+  const panel = document.getElementById("chat-panel");
+  const handle = document.getElementById("chat-resize-handle");
+
+  handle.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startRect = panel.getBoundingClientRect();
+    handle.setPointerCapture(e.pointerId);
+
+    function onMove(moveEvent) {
+      const deltaX = moveEvent.clientX - startX;
+      const deltaY = moveEvent.clientY - startY;
+      panel.style.width = `${startRect.width - deltaX}px`;
+      panel.style.height = `${startRect.height - deltaY}px`;
+    }
+
+    function onUp() {
+      handle.removeEventListener("pointermove", onMove);
+      handle.removeEventListener("pointerup", onUp);
+    }
+
+    handle.addEventListener("pointermove", onMove);
+    handle.addEventListener("pointerup", onUp);
+  });
+}
+
 function setupChat() {
+  setupChatToggle();
+  setupChatResize();
+
   const form = document.getElementById("chat-form");
   const input = document.getElementById("chat-input");
 

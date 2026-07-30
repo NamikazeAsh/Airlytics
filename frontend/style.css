@@ -290,25 +290,6 @@ body {
   font-weight: 600;
 }
 
-/* ---------- Layout: main + persistent chat panel ---------- */
-
-.dashboard-body {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 20px;
-  align-items: start;
-}
-
-.dashboard-main {
-  min-width: 0;
-}
-
-@media (max-width: 900px) {
-  .dashboard-body {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ---------- Cards ---------- */
 
 .metric-grid {
@@ -549,24 +530,73 @@ body {
   color: var(--md-on-surface);
 }
 
-/* ---------- Chat panel ---------- */
+/* ---------- Chat FAB + floating panel ---------- */
+
+.chat-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--shape-lg);
+  border: none;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  box-shadow: var(--elevation-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+}
+
+.chat-fab:hover {
+  box-shadow: var(--elevation-1), 0 0 0 8px rgba(0, 0, 0, 0.04);
+}
 
 .chat-panel {
-  position: sticky;
-  top: 76px;
+  position: fixed;
+  right: 24px;
+  bottom: 92px;
+  width: 380px;
+  height: 520px;
+  min-width: 300px;
+  min-height: 320px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 140px);
   background: var(--md-surface-container-lowest);
   border: 1px solid var(--md-outline-variant);
   border-radius: var(--shape-lg);
-  box-shadow: var(--elevation-1);
+  box-shadow: var(--elevation-2);
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 108px);
-  min-height: 420px;
   overflow: hidden;
+  z-index: 20;
+}
+
+.chat-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  z-index: 21;
+  border-top: 3px solid var(--md-outline);
+  border-left: 3px solid var(--md-outline);
+  border-top-left-radius: var(--shape-sm);
+  opacity: 0.55;
+}
+
+.chat-resize-handle:hover {
+  opacity: 1;
 }
 
 .chat-panel-header {
-  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 8px 14px 16px;
   border-bottom: 1px solid var(--md-outline-variant);
 }
 
