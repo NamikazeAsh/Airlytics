@@ -16,6 +16,7 @@ dependencies = [
     "pandas>=2.2",
     "numpy>=2.1",
     "scipy>=1.14",
+    "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]

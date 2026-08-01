@@ -3,6 +3,9 @@
 Personal health analytics dashboard and AI coach. Syncs your Fitbit data through
 the Google Health API, stores history locally in SQLite, and shows trends,
 anomalies, and readiness on a dashboard with a Groq-powered chat coach on top.
+Also trains a small Ridge regression model on your own history to forecast
+tomorrow's readiness score, validated against a naive baseline (see the
+"Readiness forecast" section on the dashboard).
 
 Single-user, runs on your own machine. No hosting, no accounts, no multi-tenant
 anything.

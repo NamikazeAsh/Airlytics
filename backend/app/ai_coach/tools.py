@@ -6,6 +6,7 @@ from app.ai_coach.llm_client import ToolSpec
 from app.analytics.readiness import READINESS_WEIGHTS
 from app.analytics.service import METRICS, AnalyticsService
 from app.auth.token_service import PROVIDER
+from app.forecasting.forecast_service import get_feature_importance
 
 _DATE_PARAM = {"type": "string", "format": "date", "description": "ISO date, YYYY-MM-DD"}
 
@@ -69,6 +70,14 @@ TOOL_SPECS = [
         ),
         parameters={"type": "object", "properties": {"date": _DATE_PARAM}, "required": ["date"]},
     ),
+    ToolSpec(
+        name="get_readiness_drivers",
+        description=(
+            "Get which health metrics most influence the readiness forecasting model's predictions, "
+            "based on real feature importance analysis of the trained model - not a guess."
+        ),
+        parameters={"type": "object", "properties": {}, "required": []},
+    ),
 ]
 
 
@@ -129,5 +138,14 @@ async def execute_tool(session: AsyncSession, name: str, arguments: dict) -> dic
         rows = await analytics.metrics_repo.get_daily_range(provider=PROVIDER, start=date, end=date)
         score = rows[0].readiness_score if rows else None
         return {"date": date.isoformat(), "readiness_score": score, "baseline_deviation_z_scores": breakdown}
+
+    if name == "get_readiness_drivers":
+        result = await get_feature_importance(session)
+        if result is None:
+            return {"error": "No forecasting model has been trained yet."}
+        return {
+            "model_name": result.model_name,
+            "drivers": [{"feature": feature, "importance_pct": round(pct, 2)} for feature, pct in result.importances],
+        }
 
     raise ValueError(f"Unknown tool '{name}'")

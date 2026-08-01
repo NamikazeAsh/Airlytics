@@ -4,6 +4,9 @@ import pytest
 
 from app.ai_coach.tools import TOOL_SPECS, execute_tool
 from app.auth.token_service import PROVIDER
+from app.config import get_settings
+from app.forecasting import forecast_service
+from app.forecasting.model import FEATURE_COLUMNS
 from app.storage.repositories.metrics_repository import MetricsRepository
 
 
@@ -97,6 +100,33 @@ async def test_get_readiness_explanation(db_session):
         "resting_heart_rate",
         "sleep_efficiency",
     }
+
+
+async def test_get_readiness_drivers_before_training(db_session, monkeypatch, tmp_path):
+    monkeypatch.setattr(get_settings(), "model_dir", str(tmp_path))
+    result = await execute_tool(db_session, "get_readiness_drivers", {})
+    assert "error" in result
+
+
+async def test_get_readiness_drivers_after_training(db_session, monkeypatch, tmp_path):
+    monkeypatch.setattr(get_settings(), "model_dir", str(tmp_path))
+    repo = MetricsRepository(db_session)
+    start = datetime.date(2026, 2, 1)
+    for i in range(25):
+        await repo.upsert_daily(
+            date=start + datetime.timedelta(days=i),
+            provider=PROVIDER,
+            hrv_rmssd_avg=40 + (i % 5),
+            resting_heart_rate=60 - (i % 3),
+            sleep_efficiency=85 + (i % 4),
+            readiness_score=50 + (i % 6),
+        )
+    await forecast_service.train_and_evaluate(db_session)
+
+    result = await execute_tool(db_session, "get_readiness_drivers", {})
+
+    assert "error" not in result
+    assert {d["feature"] for d in result["drivers"]} == set(FEATURE_COLUMNS)
 
 
 async def test_execute_tool_unknown_name_raises(db_session):

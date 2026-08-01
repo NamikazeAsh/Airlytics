@@ -220,6 +220,109 @@ async function renderInsights() {
   }
 }
 
+const MODEL_LABELS = { ridge: "Ridge", elastic_net: "Elastic Net", gradient_boosting: "Gradient Boosting" };
+
+function modelLabel(name) {
+  return MODEL_LABELS[name] ?? name;
+}
+
+function featureLabel(featureColumn) {
+  const metricKey = featureColumn.replace(/_lag1$/, "");
+  return METRICS.find((m) => m.metric === metricKey)?.title ?? metricKey.replace(/_/g, " ");
+}
+
+async function renderForecast() {
+  const container = document.getElementById("forecast-container");
+  container.innerHTML = '<div class="empty-state">Loading forecast…</div>';
+  try {
+    const status = await api.forecastStatus();
+    if (status === null) {
+      container.innerHTML = `
+        <div class="empty-state">
+          No forecast model trained yet.
+          <button class="btn" id="train-forecast-btn">Train model</button>
+        </div>`;
+      document.getElementById("train-forecast-btn").addEventListener("click", async (e) => {
+        e.target.textContent = "Training…";
+        e.target.disabled = true;
+        try {
+          await api.trainForecast();
+          renderForecast();
+        } catch {
+          container.innerHTML = '<div class="empty-state">Could not train the model right now.</div>';
+        }
+      });
+      return;
+    }
+
+    const prediction = await api.forecastPrediction().catch(() => null);
+    const drivers = await api.forecastFeatureImportance().catch(() => null);
+
+    const candidateRows = Object.entries(status.candidate_results ?? {})
+      .filter(([name]) => name !== status.winning_model)
+      .map(
+        ([name, r]) =>
+          `<div class="forecast-validation-row forecast-validation-row-muted"><span>${modelLabel(name)} MAE</span><span>${
+            r.model_mae ?? "—"
+          }</span></div>`,
+      )
+      .join("");
+
+    const driverRows = drivers
+      ? drivers.importances
+          .map(
+            (d) =>
+              `<div class="forecast-validation-row"><span>${featureLabel(d.feature)}</span><span>${d.importance_pct}%</span></div>`,
+          )
+          .join("")
+      : '<div class="empty-state">No driver breakdown available.</div>';
+
+    container.innerHTML = `
+      <div class="forecast-grid">
+        <div class="metric-card">
+          <div class="metric-card-header">
+            <span class="metric-card-title">Predicted readiness</span>
+          </div>
+          <div class="metric-card-value">${prediction ? prediction.predicted_readiness : "—"}</div>
+          <div class="metric-card-sub">${
+            prediction
+              ? `for ${prediction.predicted_date} &middot; last actual ${prediction.last_actual_readiness} (${prediction.last_actual_date})`
+              : "no current prediction available"
+          }</div>
+        </div>
+        <div class="forecast-validation-card">
+          <div class="metric-card-title">Model validation (walk-forward)</div>
+          <div class="forecast-validation-row"><span>Best model</span><span>${modelLabel(status.winning_model)}</span></div>
+          <div class="forecast-validation-row"><span>Model MAE</span><span>${status.model_mae ?? "—"}</span></div>
+          <div class="forecast-validation-row"><span>Naive baseline MAE</span><span>${status.baseline_mae ?? "—"}</span></div>
+          <div class="forecast-validation-row"><span>Improvement vs baseline</span><span>${
+            status.improvement_pct !== null ? `${status.improvement_pct}%` : "—"
+          }</span></div>
+          <div class="forecast-validation-row"><span>Samples / test folds</span><span>${status.n_samples} / ${status.n_test_folds}</span></div>
+          ${candidateRows}
+          <button class="btn" id="retrain-forecast-btn">Retrain</button>
+        </div>
+        <div class="forecast-validation-card">
+          <div class="metric-card-title">Top drivers</div>
+          ${driverRows}
+        </div>
+      </div>`;
+
+    document.getElementById("retrain-forecast-btn").addEventListener("click", async (e) => {
+      e.target.textContent = "Training…";
+      e.target.disabled = true;
+      try {
+        await api.trainForecast();
+        renderForecast();
+      } catch {
+        container.innerHTML = '<div class="empty-state">Could not retrain the model right now.</div>';
+      }
+    });
+  } catch {
+    container.innerHTML = '<div class="empty-state">Could not load forecast.</div>';
+  }
+}
+
 let conversationId = localStorage.getItem("airlytics_conversation_id") ?? null;
 
 function renderMarkdown(content) {
@@ -360,6 +463,7 @@ async function init() {
   setupRangeTabs();
   renderDashboard();
   renderInsights();
+  renderForecast();
   setupChat();
 }
 

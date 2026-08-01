@@ -124,6 +124,21 @@ class AiInsight(Base):
     acknowledged: Mapped[bool] = mapped_column(default=False)
 
 
+class ForecastRun(Base):
+    __tablename__ = "forecast_runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    trained_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=utc_now)
+    target_metric: Mapped[str] = mapped_column(String(50))
+    winning_model: Mapped[str | None] = mapped_column(String(50), default=None)
+    n_samples: Mapped[int] = mapped_column()
+    n_test_folds: Mapped[int] = mapped_column()
+    model_mae: Mapped[float | None] = mapped_column(Float, default=None)
+    baseline_mae: Mapped[float | None] = mapped_column(Float, default=None)
+    improvement_pct: Mapped[float | None] = mapped_column(Float, default=None)
+    candidate_results: Mapped[dict | None] = mapped_column(JSON, default=None)
+
+
 class SyncState(Base):
     __tablename__ = "sync_state"
 

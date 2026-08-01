@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     max_backfill_days: int = 365
 
+    model_dir: str = "data/models"
+
 
 @lru_cache
 def get_settings() -> Settings:

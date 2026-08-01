@@ -29,6 +29,10 @@ export const api = {
   insights: (days = 7) => getJson(`/api/coach/insights?days=${days}`),
   generateInsights: () => postJson("/api/coach/insights/generate", {}),
   chat: (conversationId, message) => postJson("/api/coach/chat", { conversation_id: conversationId, message }),
+  forecastStatus: () => getJson("/api/forecast/status"),
+  forecastPrediction: () => getJson("/api/forecast/prediction"),
+  forecastFeatureImportance: () => getJson("/api/forecast/feature-importance"),
+  trainForecast: () => postJson("/api/forecast/train", {}),
 };
 
 export const loginUrl = "/api/auth/google/login";

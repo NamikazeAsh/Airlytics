@@ -530,6 +530,48 @@ body {
   color: var(--md-on-surface);
 }
 
+/* ---------- Forecast ---------- */
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.forecast-validation-card {
+  background: var(--md-surface-container-low);
+  border-radius: var(--shape-md);
+  padding: 16px;
+  box-shadow: var(--elevation-1);
+}
+
+.forecast-validation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--md-outline-variant);
+  /* Body Medium */
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  color: var(--md-on-surface);
+}
+
+.forecast-validation-row:last-of-type {
+  border-bottom: none;
+}
+
+.forecast-validation-row-muted {
+  color: var(--md-on-surface-variant);
+  font-size: 13px;
+}
+
+.forecast-validation-card .btn {
+  margin-top: 12px;
+  width: 100%;
+}
+
 /* ---------- Chat FAB + floating panel ---------- */
 
 .chat-fab {

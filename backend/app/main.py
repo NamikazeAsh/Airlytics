@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.routers.analytics import router as analytics_router
 from app.api.routers.coach import router as coach_router
+from app.api.routers.forecast import router as forecast_router
 from app.api.routers.metrics import router as metrics_router
 from app.api.routers.sync import router as sync_router
 from app.auth.router import router as auth_router
@@ -30,6 +31,7 @@ app.include_router(sync_router)
 app.include_router(metrics_router)
 app.include_router(analytics_router)
 app.include_router(coach_router)
+app.include_router(forecast_router)
 
 
 @app.get("/api/health")
