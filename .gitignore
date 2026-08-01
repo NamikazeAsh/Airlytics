@@ -9,4 +9,5 @@ frontend/dist/
 *.egg-info/
 .pytest_cache/
 backend/data/
+backend/evals/results/
 client_secret*.json

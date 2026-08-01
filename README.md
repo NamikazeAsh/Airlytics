@@ -74,3 +74,22 @@ this script just does the copy, it doesn't schedule itself.
 cd backend
 pytest
 ```
+
+## Evals
+
+A separate eval harness for the AI coach lives at `backend/evals/` — it's not part of the
+pytest suite because it hits the **real Groq API** (costs real tokens, non-deterministic)
+against a fixed synthetic dataset seeded into a throwaway in-memory DB, then scores each
+reply for tool-call correctness and grounding (every number in the reply should trace back
+to a tool result, the system prompt, or the question itself). The grounding check is a
+rule-based number-matching heuristic, not an LLM judge — deterministic and inspectable, but
+it can flag incidental numbers (dates, durations) as false positives; read the per-case
+`ungrounded_numbers` in the report before trusting a "FLAGGED" line at face value.
+
+```
+cd backend
+python -m evals.runner
+```
+
+Prints a per-case pass/fail summary and writes a full JSON report to
+`backend/evals/results/` (gitignored).
