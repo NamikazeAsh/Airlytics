@@ -1,5 +1,7 @@
 # Airlytics
 
+<img src="assets/logo.png" alt="Airlytics logo" width="280">
+
 Personal health analytics dashboard and AI coach. Syncs your Fitbit data through
 the Google Health API, stores history locally in SQLite, and shows trends,
 anomalies, and readiness on a dashboard with a Groq-powered chat coach on top.
