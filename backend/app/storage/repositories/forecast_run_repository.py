@@ -37,3 +37,8 @@ class ForecastRunRepository:
         stmt = select(ForecastRun).order_by(ForecastRun.trained_at.desc()).limit(1)
         result = await self.session.execute(stmt)
         return result.scalars().first()
+
+    async def get_recent(self, limit: int = 20) -> list[ForecastRun]:
+        stmt = select(ForecastRun).order_by(ForecastRun.trained_at.desc()).limit(limit)
+        result = await self.session.execute(stmt)
+        return list(result.scalars())

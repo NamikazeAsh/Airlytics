@@ -42,6 +42,22 @@ async def status(session: AsyncSession = Depends(get_session)) -> dict | None:
     }
 
 
+@router.get("/history")
+async def history(session: AsyncSession = Depends(get_session)) -> list[dict]:
+    runs = await ForecastRunRepository(session).get_recent(limit=20)
+    return [
+        {
+            "trained_at": r.trained_at.isoformat(),
+            "winning_model": r.winning_model,
+            "model_mae": r.model_mae,
+            "baseline_mae": r.baseline_mae,
+            "improvement_pct": r.improvement_pct,
+            "n_samples": r.n_samples,
+        }
+        for r in reversed(runs)
+    ]
+
+
 @router.get("/feature-importance")
 async def feature_importance(session: AsyncSession = Depends(get_session)) -> dict | None:
     result = await get_feature_importance(session)
