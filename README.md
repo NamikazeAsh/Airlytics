@@ -53,8 +53,9 @@ though the app itself runs locally — the coach chat and page fonts won't rende
 correctly without it.
 
 Run with exactly **one** uvicorn worker — the background scheduler (sync jobs,
-token refresh, nightly rollups/insights) lives in-process, and a second worker
-would duplicate every job and race on token refresh.
+token refresh, nightly rollups/insights) and the manual "Update now" sync
+progress tracker both live in-process, and a second worker would duplicate
+jobs, race on token refresh, and show inconsistent sync progress.
 
 ## Backups
 

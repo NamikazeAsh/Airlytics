@@ -87,12 +87,18 @@ async def sync_day_tracked(session: AsyncSession, date: datetime.date) -> None:
     except NotConnectedError:
         raise
     except Exception as exc:
+        # Preserve the last *successful* sync date on failure - repo.upsert always
+        # overwrites last_synced_date, and advancing it to the failing date would make
+        # manual_sync_service think this day already succeeded and skip retrying it.
+        existing = await repo.get(PROVIDER, DAILY_SUMMARY_METRIC_TYPE)
         await repo.upsert(
             provider=PROVIDER,
             metric_type=DAILY_SUMMARY_METRIC_TYPE,
             status="error",
-            last_synced_date=date,
-            last_error=str(exc),
+            last_synced_date=existing.last_synced_date if existing else None,
+            # str(exc) is empty for some exceptions (e.g. asyncio.TimeoutError), so include
+            # the type name too - otherwise the recorded error is a blank, useless string.
+            last_error=f"{type(exc).__name__}: {exc}",
         )
         raise
 

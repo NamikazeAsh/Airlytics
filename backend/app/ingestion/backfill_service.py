@@ -47,7 +47,7 @@ async def run_backfill_step(session: AsyncSession) -> None:
                 provider=PROVIDER,
                 metric_type=METRIC_TYPE,
                 status="error",
-                last_error=str(exc),
+                last_error=f"{type(exc).__name__}: {exc}",
                 cursor={"next_date": next_date.isoformat()},
             )
             return
