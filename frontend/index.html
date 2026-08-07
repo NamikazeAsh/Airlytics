@@ -34,12 +34,20 @@
             <span class="status-dot"></span>
             <span class="status-label">Loading…</span>
           </span>
+          <button id="update-now-btn" class="icon-btn" type="button" aria-label="Update data now">
+            &#8635;
+          </button>
           <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark mode">
             <span class="theme-icon-light">&#9728;</span>
             <span class="theme-icon-dark">&#9789;</span>
           </button>
         </div>
       </header>
+
+      <div id="sync-progress" class="sync-progress hidden">
+        <div class="sync-progress-bar"><div class="sync-progress-fill" id="sync-progress-fill"></div></div>
+        <span class="sync-progress-text" id="sync-progress-text"></span>
+      </div>
 
       <main class="dashboard-main">
         <div class="range-tabs" id="range-tabs"></div>
@@ -89,6 +97,17 @@
         <button class="icon-btn icon-btn-filled" type="submit" aria-label="Send">&#10148;</button>
       </form>
     </aside>
+
+    <div id="history-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-card-header">
+          <span class="modal-card-title">Training history</span>
+          <button id="history-modal-close" class="icon-btn" type="button" aria-label="Close">&#10005;</button>
+        </div>
+        <div id="history-chart" class="history-chart"></div>
+        <div id="history-list" class="history-list"></div>
+      </div>
+    </div>
 
     <script type="module" src="/app.js"></script>
   </body>

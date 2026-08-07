@@ -32,7 +32,10 @@ export const api = {
   forecastStatus: () => getJson("/api/forecast/status"),
   forecastPrediction: () => getJson("/api/forecast/prediction"),
   forecastFeatureImportance: () => getJson("/api/forecast/feature-importance"),
+  forecastHistory: () => getJson("/api/forecast/history"),
   trainForecast: () => postJson("/api/forecast/train", {}),
+  triggerSyncNow: () => postJson("/api/sync/trigger-now", {}),
+  syncProgress: () => getJson("/api/sync/progress"),
 };
 
 export const loginUrl = "/api/auth/google/login";

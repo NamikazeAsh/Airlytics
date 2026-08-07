@@ -2,21 +2,22 @@ import { api, loginUrl } from "./api.js";
 import { renderLineChart } from "./charts.js";
 
 const RANGES = [
+  { label: "1d", days: 1 },
   { label: "7d", days: 7 },
   { label: "30d", days: 30 },
   { label: "90d", days: 90 },
 ];
 
 const METRICS = [
-  { title: "Steps", metric: "steps_total" },
-  { title: "Resting heart rate", metric: "resting_heart_rate", unit: "bpm" },
-  { title: "HRV (RMSSD)", metric: "hrv_rmssd_avg", unit: "ms" },
-  { title: "Sleep duration", metric: "sleep_duration_minutes", unit: "min" },
-  { title: "Sleep efficiency", metric: "sleep_efficiency", unit: "%" },
-  { title: "SpO2", metric: "spo2_avg", unit: "%" },
-  { title: "Calories", metric: "calories_total", unit: "kcal" },
-  { title: "Readiness", metric: "readiness_score" },
-  { title: "Active minutes", metric: "active_minutes", unit: "min" },
+  { title: "Steps", metric: "steps_total", color: "var(--chart-1)" },
+  { title: "Resting heart rate", metric: "resting_heart_rate", unit: "bpm", color: "var(--chart-2)" },
+  { title: "HRV (RMSSD)", metric: "hrv_rmssd_avg", unit: "ms", color: "var(--chart-3)" },
+  { title: "Sleep duration", metric: "sleep_duration_minutes", unit: "min", color: "var(--chart-4)" },
+  { title: "Sleep efficiency", metric: "sleep_efficiency", unit: "%", color: "var(--chart-5)" },
+  { title: "SpO2", metric: "spo2_avg", unit: "%", color: "var(--chart-6)" },
+  { title: "Calories", metric: "calories_total", unit: "kcal", color: "var(--chart-7)" },
+  { title: "Readiness", metric: "readiness_score", color: "var(--chart-8)" },
+  { title: "Active minutes", metric: "active_minutes", unit: "min", color: "var(--chart-1)" },
 ];
 
 const TREND_LABEL = { increasing: "up", decreasing: "down", stable: "stable" };
@@ -116,14 +117,14 @@ async function renderMetricCard(card, def, start, end, rangeLabel) {
 
   card.innerHTML = `
     <div class="metric-card-header">
-      <span class="metric-card-title">${def.title}</span>
+      <span class="metric-card-title"><span class="metric-card-dot" style="background:${def.color}"></span>${def.title}</span>
       ${trendBadgeHtml(trend)}
     </div>
     <div class="metric-card-value">${valueHtml}</div>
     <div class="metric-card-sub">avg over ${rangeLabel} &middot; ${latestHtml}</div>
     <div class="metric-card-chart"></div>
   `;
-  renderLineChart(card.querySelector(".metric-card-chart"), points);
+  renderLineChart(card.querySelector(".metric-card-chart"), points, { color: def.color });
 }
 
 function severityClass(zScore) {
@@ -223,6 +224,7 @@ async function renderInsights() {
 const MODEL_LABELS = { ridge: "Ridge", elastic_net: "Elastic Net", gradient_boosting: "Gradient Boosting" };
 
 function modelLabel(name) {
+  if (!name) return "—";
   return MODEL_LABELS[name] ?? name;
 }
 
@@ -290,8 +292,8 @@ async function renderForecast() {
               : "no current prediction available"
           }</div>
         </div>
-        <div class="forecast-validation-card">
-          <div class="metric-card-title">Model validation (walk-forward)</div>
+        <div class="forecast-validation-card" id="model-validation-card" tabindex="0" role="button">
+          <div class="metric-card-title">Model validation (walk-forward) <span class="card-hint">tap for history</span></div>
           <div class="forecast-validation-row"><span>Best model</span><span>${modelLabel(status.winning_model)}</span></div>
           <div class="forecast-validation-row"><span>Model MAE</span><span>${status.model_mae ?? "—"}</span></div>
           <div class="forecast-validation-row"><span>Naive baseline MAE</span><span>${status.baseline_mae ?? "—"}</span></div>
@@ -309,6 +311,7 @@ async function renderForecast() {
       </div>`;
 
     document.getElementById("retrain-forecast-btn").addEventListener("click", async (e) => {
+      e.stopPropagation();
       e.target.textContent = "Training…";
       e.target.disabled = true;
       try {
@@ -318,9 +321,63 @@ async function renderForecast() {
         container.innerHTML = '<div class="empty-state">Could not retrain the model right now.</div>';
       }
     });
+
+    const validationCard = document.getElementById("model-validation-card");
+    validationCard.addEventListener("click", openHistoryModal);
+    validationCard.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") openHistoryModal();
+    });
   } catch {
     container.innerHTML = '<div class="empty-state">Could not load forecast.</div>';
   }
+}
+
+async function openHistoryModal() {
+  const modal = document.getElementById("history-modal");
+  modal.classList.remove("hidden");
+
+  const chartContainer = document.getElementById("history-chart");
+  const listContainer = document.getElementById("history-list");
+  chartContainer.innerHTML = "";
+  listContainer.innerHTML = '<div class="empty-state">Loading…</div>';
+
+  try {
+    const runs = await api.forecastHistory();
+    if (runs.length === 0) {
+      listContainer.innerHTML = '<div class="empty-state">No training runs yet.</div>';
+      return;
+    }
+
+    const chartData = runs.map((r) => ({ date: r.trained_at.slice(0, 10), value: r.model_mae }));
+    renderLineChart(chartContainer, chartData);
+
+    listContainer.innerHTML = runs
+      .slice()
+      .reverse()
+      .map(
+        (r) => `
+        <div class="history-row">
+          <span class="history-row-date">${r.trained_at.slice(0, 10)}</span>
+          <span class="history-row-model">${modelLabel(r.winning_model)}</span>
+          <span>MAE ${r.model_mae ?? "—"}</span>
+          <span>${r.improvement_pct !== null ? `+${r.improvement_pct}%` : "—"}</span>
+        </div>`,
+      )
+      .join("");
+  } catch {
+    listContainer.innerHTML = '<div class="empty-state">Could not load training history.</div>';
+  }
+}
+
+function closeHistoryModal() {
+  document.getElementById("history-modal").classList.add("hidden");
+}
+
+function setupHistoryModal() {
+  document.getElementById("history-modal-close").addEventListener("click", closeHistoryModal);
+  document.getElementById("history-modal").addEventListener("click", (e) => {
+    if (e.target.id === "history-modal") closeHistoryModal();
+  });
 }
 
 let conversationId = localStorage.getItem("airlytics_conversation_id") ?? null;
@@ -443,8 +500,82 @@ function setupChat() {
   loadConversation();
 }
 
+function renderSyncProgress(progress) {
+  const container = document.getElementById("sync-progress");
+  const fill = document.getElementById("sync-progress-fill");
+  const text = document.getElementById("sync-progress-text");
+
+  if (progress.status === "idle") {
+    container.classList.add("hidden");
+    return;
+  }
+
+  container.classList.remove("hidden");
+
+  if (progress.status === "running") {
+    const pct =
+      progress.stage === "computing_readiness" || progress.total_days === 0
+        ? 100
+        : (progress.day_index / progress.total_days) * 100;
+    fill.style.width = `${pct}%`;
+    text.textContent =
+      progress.stage === "computing_readiness"
+        ? "Computing readiness…"
+        : `Syncing day ${progress.day_index} of ${progress.total_days} (${progress.current_day})`;
+  } else if (progress.status === "done") {
+    fill.style.width = "100%";
+    text.textContent = progress.total_days === 0 ? "Already up to date" : "Update complete";
+  } else if (progress.status === "error") {
+    text.textContent = `Update failed: ${progress.error}`;
+  }
+}
+
+let syncPollTimer = null;
+
+async function pollSyncProgress() {
+  const progress = await api.syncProgress().catch(() => null);
+  if (!progress) return;
+
+  renderSyncProgress(progress);
+
+  if (progress.status === "running") {
+    syncPollTimer = setTimeout(pollSyncProgress, 1000);
+    return;
+  }
+
+  clearTimeout(syncPollTimer);
+  document.getElementById("update-now-btn").disabled = false;
+
+  if (progress.status === "done") {
+    renderDashboard();
+    renderStatusPill();
+    setTimeout(() => document.getElementById("sync-progress").classList.add("hidden"), 3000);
+  }
+}
+
+function setupUpdateButton() {
+  const btn = document.getElementById("update-now-btn");
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    await api.triggerSyncNow().catch(() => {});
+    pollSyncProgress();
+  });
+
+  api
+    .syncProgress()
+    .then((progress) => {
+      if (progress && progress.status === "running") {
+        btn.disabled = true;
+        pollSyncProgress();
+      }
+    })
+    .catch(() => {});
+}
+
 async function init() {
   setupThemeToggle();
+  setupUpdateButton();
+  setupHistoryModal();
 
   const auth = await api.authStatus().catch(() => ({ connected: false }));
 
