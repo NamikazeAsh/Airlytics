@@ -12,6 +12,11 @@ tomorrow's readiness score, validated against a naive baseline (see the
 Single-user, runs on your own machine. No hosting, no accounts, no multi-tenant
 anything.
 
+<p float="left">
+  <img src="assets/screenshot-light.png" alt="Airlytics dashboard, light mode" width="49%">
+  <img src="assets/screenshot-dark.png" alt="Airlytics dashboard, dark mode" width="49%">
+</p>
+
 ## One-time setup
 
 1. **Google Cloud project** (for OAuth + Google Health API access):
